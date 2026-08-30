@@ -1,0 +1,68 @@
+# Python bytecode and package artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+
+# Python environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python test, type-check, and coverage caches
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.pyright/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Local demo review state (generated at runtime)
+data/demo/reviews.json
+data/demo/.reviews.json.*.tmp
+data/demo/reviews.json.*.tmp
+
+# Local databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+*.sqlite3-journal
+
+# Node and package-manager artifacts
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
+
+# Vite output and cache
+frontend/dist/
+.vite/
+frontend/.vite/
+
+# Local environment files (keep documented examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Operating-system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Desktop.ini

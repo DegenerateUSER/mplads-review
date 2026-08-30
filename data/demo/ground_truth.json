@@ -1,0 +1,316 @@
+{
+  "as_of_date": "2026-08-30",
+  "blurred_photo_work_ids": [
+    "WRK-00773",
+    "WRK-00780",
+    "WRK-00787",
+    "WRK-00794",
+    "WRK-00801",
+    "WRK-00808",
+    "WRK-00815",
+    "WRK-00822"
+  ],
+  "build_summary": {
+    "continuation_exemptions_respected": 8,
+    "detector_counts": {
+      "cost_outlier": 16,
+      "duplicate": 16,
+      "photo": 16,
+      "stall": 24
+    },
+    "flag_count": 72,
+    "injected_duplicate_pairs_detected": 16,
+    "injected_photo_reuse_pairs_detected": 8,
+    "injected_unit_cost_outliers_detected": 16,
+    "photo_fixture_count": 24,
+    "risk_tier_counts": {
+      "green": 808,
+      "red": 16
+    }
+  },
+  "categories": [
+    "Road",
+    "Building",
+    "Water",
+    "Sanitation",
+    "Education",
+    "Health",
+    "Electrification",
+    "Other"
+  ],
+  "continuation_exempt_pairs": [
+    [
+      "WRK-00774",
+      "WRK-00775"
+    ],
+    [
+      "WRK-00781",
+      "WRK-00782"
+    ],
+    [
+      "WRK-00788",
+      "WRK-00789"
+    ],
+    [
+      "WRK-00795",
+      "WRK-00796"
+    ],
+    [
+      "WRK-00802",
+      "WRK-00803"
+    ],
+    [
+      "WRK-00809",
+      "WRK-00810"
+    ],
+    [
+      "WRK-00816",
+      "WRK-00817"
+    ],
+    [
+      "WRK-00823",
+      "WRK-00824"
+    ]
+  ],
+  "cost_outlier_work_ids": [
+    "WRK-00769",
+    "WRK-00770",
+    "WRK-00776",
+    "WRK-00777",
+    "WRK-00783",
+    "WRK-00784",
+    "WRK-00790",
+    "WRK-00791",
+    "WRK-00797",
+    "WRK-00798",
+    "WRK-00804",
+    "WRK-00805",
+    "WRK-00811",
+    "WRK-00812",
+    "WRK-00818",
+    "WRK-00819"
+  ],
+  "dataset": "SIH 2026 deterministic MPLADS review demo",
+  "districts": [
+    "Coimbatore",
+    "Dibrugarh",
+    "Kamrup Metropolitan",
+    "Lucknow",
+    "Madurai",
+    "Nashik",
+    "Pune",
+    "Varanasi"
+  ],
+  "duplicate_detection": {
+    "default_method": "multilingual domain glossary + RapidFuzz",
+    "embeddings": "optional and lazy-loaded when explicitly enabled",
+    "general_embeddings_default": false
+  },
+  "duplicate_pairs": [
+    {
+      "first": "WRK-00769",
+      "kind": "Hindi/English",
+      "second": "WRK-00770"
+    },
+    {
+      "first": "WRK-00771",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00772"
+    },
+    {
+      "first": "WRK-00776",
+      "kind": "Hindi/English",
+      "second": "WRK-00777"
+    },
+    {
+      "first": "WRK-00778",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00779"
+    },
+    {
+      "first": "WRK-00783",
+      "kind": "Hindi/English",
+      "second": "WRK-00784"
+    },
+    {
+      "first": "WRK-00785",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00786"
+    },
+    {
+      "first": "WRK-00790",
+      "kind": "Hindi/English",
+      "second": "WRK-00791"
+    },
+    {
+      "first": "WRK-00792",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00793"
+    },
+    {
+      "first": "WRK-00797",
+      "kind": "Hindi/English",
+      "second": "WRK-00798"
+    },
+    {
+      "first": "WRK-00799",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00800"
+    },
+    {
+      "first": "WRK-00804",
+      "kind": "Hindi/English",
+      "second": "WRK-00805"
+    },
+    {
+      "first": "WRK-00806",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00807"
+    },
+    {
+      "first": "WRK-00811",
+      "kind": "Hindi/English",
+      "second": "WRK-00812"
+    },
+    {
+      "first": "WRK-00813",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00814"
+    },
+    {
+      "first": "WRK-00818",
+      "kind": "Hindi/English",
+      "second": "WRK-00819"
+    },
+    {
+      "first": "WRK-00820",
+      "kind": "transliterated Hindi/English",
+      "second": "WRK-00821"
+    }
+  ],
+  "interpretation": "Ground truth identifies injected anomaly examples for detector testing. Flags remain review recommendations, not adjudications.",
+  "low_quality_photo_work_ids": [
+    "WRK-00773",
+    "WRK-00780",
+    "WRK-00787",
+    "WRK-00794",
+    "WRK-00801",
+    "WRK-00808",
+    "WRK-00815",
+    "WRK-00822"
+  ],
+  "mp_names": [
+    "Demo MP Arul Kumar",
+    "Demo MP Asha Deshmukh",
+    "Demo MP Coimbatore Rural",
+    "Demo MP Dibrugarh Rural",
+    "Demo MP Imran Siddiqui",
+    "Demo MP Kamrup Metropolitan Rural",
+    "Demo MP Kavita Mishra",
+    "Demo MP Lucknow Rural",
+    "Demo MP Madurai Rural",
+    "Demo MP Meena Selvam",
+    "Demo MP Nashik Rural",
+    "Demo MP Nayan Bora",
+    "Demo MP Pune Rural",
+    "Demo MP Rina Das",
+    "Demo MP Rohit Patil",
+    "Demo MP Varanasi Rural"
+  ],
+  "photo_fixture_work_ids": [
+    "WRK-00769",
+    "WRK-00770",
+    "WRK-00773",
+    "WRK-00776",
+    "WRK-00777",
+    "WRK-00780",
+    "WRK-00783",
+    "WRK-00784",
+    "WRK-00787",
+    "WRK-00790",
+    "WRK-00791",
+    "WRK-00794",
+    "WRK-00797",
+    "WRK-00798",
+    "WRK-00801",
+    "WRK-00804",
+    "WRK-00805",
+    "WRK-00808",
+    "WRK-00811",
+    "WRK-00812",
+    "WRK-00815",
+    "WRK-00818",
+    "WRK-00819",
+    "WRK-00822"
+  ],
+  "photo_reuse_pairs": [
+    [
+      "WRK-00769",
+      "WRK-00770"
+    ],
+    [
+      "WRK-00776",
+      "WRK-00777"
+    ],
+    [
+      "WRK-00783",
+      "WRK-00784"
+    ],
+    [
+      "WRK-00790",
+      "WRK-00791"
+    ],
+    [
+      "WRK-00797",
+      "WRK-00798"
+    ],
+    [
+      "WRK-00804",
+      "WRK-00805"
+    ],
+    [
+      "WRK-00811",
+      "WRK-00812"
+    ],
+    [
+      "WRK-00818",
+      "WRK-00819"
+    ]
+  ],
+  "portal_coverage_note": "Synthetic work dates begin in FY 2023-24, matching the stated work-level portal coverage boundary.",
+  "record_count": 824,
+  "seed": 26102,
+  "source": "synthetic",
+  "stalled_work_ids": [
+    "WRK-00769",
+    "WRK-00770",
+    "WRK-00773",
+    "WRK-00776",
+    "WRK-00777",
+    "WRK-00780",
+    "WRK-00783",
+    "WRK-00784",
+    "WRK-00787",
+    "WRK-00790",
+    "WRK-00791",
+    "WRK-00794",
+    "WRK-00797",
+    "WRK-00798",
+    "WRK-00801",
+    "WRK-00804",
+    "WRK-00805",
+    "WRK-00808",
+    "WRK-00811",
+    "WRK-00812",
+    "WRK-00815",
+    "WRK-00818",
+    "WRK-00819",
+    "WRK-00822"
+  ],
+  "states": [
+    "Assam",
+    "Maharashtra",
+    "Tamil Nadu",
+    "Uttar Pradesh"
+  ]
+}
