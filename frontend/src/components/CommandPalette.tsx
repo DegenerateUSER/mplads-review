@@ -40,6 +40,14 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
 
+  const isMac = useMemo(() => {
+    try {
+      return navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+    } catch {
+      return false;
+    }
+  }, []);
+
   const filteredItems = useMemo(() => {
     const term = query.trim().toLocaleLowerCase();
     if (!term) return items.slice(0, 10);
@@ -142,14 +150,14 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
         ref={triggerRef}
         className="search-trigger"
         type="button"
-        aria-label="Search works and districts"
+        aria-label="Search works and districts (⌘K / Ctrl+K)"
         aria-haspopup="dialog"
         aria-controls="command-palette"
         onClick={openPalette}
       >
-        <Search aria-hidden="true" size={17} strokeWidth={1.8} />
-        <span className="search-trigger__label">Search works or districts</span>
-        <kbd>⌘ / Ctrl K</kbd>
+        <Search className="search-trigger__icon" aria-hidden="true" size={15} strokeWidth={2} />
+        <span className="search-trigger__label">Search works, districts or IDs…</span>
+        <kbd className="search-trigger__kbd">{isMac ? "⌘K" : "Ctrl K"}</kbd>
       </button>
 
       <dialog
@@ -167,7 +175,7 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
       >
         <div className="command-panel">
           <div className="command-field">
-            <Search aria-hidden="true" size={19} strokeWidth={1.8} />
+            <Search className="command-field__icon" aria-hidden="true" size={18} strokeWidth={2} />
             <div className="command-field__input">
               <label className="sr-only" htmlFor="command-search">
                 Search works and districts
@@ -184,7 +192,7 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
                 aria-activedescendant={
                   filteredItems.length ? `command-option-${activeIndex}` : undefined
                 }
-                placeholder="Type a work ID, title or district"
+                placeholder="Search by Work ID, title, MP name, or district…"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={handleInputKeyDown}
@@ -193,17 +201,19 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
             <button
               className="icon-button"
               type="button"
-              aria-label="Close search"
+              aria-label="Close search dialog"
               onClick={closePalette}
             >
-              <X aria-hidden="true" size={18} strokeWidth={1.8} />
+              <X aria-hidden="true" size={16} strokeWidth={2} />
             </button>
           </div>
 
           <div className="command-status" aria-live="polite">
-            <h2 id="command-title">Search the review scope</h2>
-            <span>
-              {filteredItems.length} {filteredItems.length === 1 ? "result" : "results"}
+            <h2 id="command-title" className="command-status__title">
+              Review Scope Index
+            </h2>
+            <span className="command-status__count">
+              {filteredItems.length} {filteredItems.length === 1 ? "match" : "matches"}
             </span>
           </div>
 
@@ -214,7 +224,7 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
                 return (
                   <section key={group} className="command-group" aria-label={`${group} results`}>
                     <p className="command-group__label">
-                      {group === "work" ? "Works" : "Districts"}
+                      {group === "work" ? "Suspicious Works & Flags" : "Districts in Scope"}
                     </p>
                     {groupedItems[group].map((item) => {
                       const itemIndex = filteredItems.indexOf(item);
@@ -233,9 +243,9 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
                         >
                           <span className="command-option__icon" aria-hidden="true">
                             {item.kind === "work" ? (
-                              <FileSearch size={18} strokeWidth={1.8} />
+                              <FileSearch size={16} strokeWidth={1.8} />
                             ) : (
-                              <MapPin size={18} strokeWidth={1.8} />
+                              <MapPin size={16} strokeWidth={1.8} />
                             )}
                           </span>
                           <span className="command-option__copy">
@@ -245,8 +255,8 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
                           <CornerDownLeft
                             className="command-option__enter"
                             aria-hidden="true"
-                            size={16}
-                            strokeWidth={1.8}
+                            size={14}
+                            strokeWidth={2}
                           />
                         </button>
                       );
@@ -258,28 +268,28 @@ export function CommandPalette({ items, onSelect }: CommandPaletteProps) {
               <div className="command-empty">
                 <SearchX aria-hidden="true" size={24} strokeWidth={1.6} />
                 <strong>No matching work or district</strong>
-                <span>Try a shorter title, work ID or district name.</span>
+                <span>Try a different work ID, district name, or keyword.</span>
               </div>
             )}
           </div>
 
           <div className="command-footer" aria-hidden="true">
-            <span>
+            <span className="command-footer__hint">
               <kbd>
-                <ArrowUp size={12} />
+                <ArrowUp size={11} />
               </kbd>
               <kbd>
-                <ArrowDown size={12} />
+                <ArrowDown size={11} />
               </kbd>
               Navigate
             </span>
-            <span>
+            <span className="command-footer__hint">
               <kbd>
-                <CornerDownLeft size={12} />
+                <CornerDownLeft size={11} />
               </kbd>
-              Open
+              Inspect
             </span>
-            <span>
+            <span className="command-footer__hint">
               <kbd>Esc</kbd>
               Close
             </span>

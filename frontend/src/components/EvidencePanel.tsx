@@ -1,15 +1,23 @@
 import {
+  AlertOctagon,
+  ArrowLeft,
   CheckCircle2,
   Clock3,
   Database,
+  ExternalLink,
   FileText,
+  HelpCircle,
   Image,
   Languages,
+  Layers,
   Link2,
   LoaderCircle,
   MapPin,
   MessageSquareWarning,
   Scale,
+  Sparkles,
+  TrendingUp,
+  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type {
@@ -28,13 +36,20 @@ interface EvidencePanelProps {
   actionPending: boolean;
   statusMessage: string;
   onDecision: (status: Extract<ReviewStatus, "reviewed" | "disputed">) => void;
+  onClose?: () => void;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
   notation: "compact",
-  maximumFractionDigits: 1,
+  maximumFractionDigits: 2,
+});
+
+const fullCurrencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
 });
 
 const dateFormatter = new Intl.DateTimeFormat("en-IN", {
@@ -55,10 +70,10 @@ const provenanceLabels: Record<DataSource, string> = {
 
 const reviewStatusLabels: Record<ReviewStatus, string> = {
   pending: "Pending review",
-  reviewed: "Reviewed",
-  disputed: "Disputed",
-  dismissed: "Dismissed",
-  needs_follow_up: "Needs follow-up",
+  reviewed: "Reviewed & cleared",
+  disputed: "Disputed flag",
+  dismissed: "Dismissed signal",
+  needs_follow_up: "Needs field follow-up",
 };
 
 const detectorLabels: Record<string, string> = {
@@ -76,7 +91,7 @@ function detectorLabel(detector: string) {
 }
 
 function formatDate(value: string) {
-  if (!value) return "Not supplied";
+  if (!value) return "Not recorded";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
 }
@@ -88,76 +103,112 @@ function highlightMatch(text: string, match: string): ReactNode {
   return (
     <>
       {text.slice(0, index)}
-      <mark>{text.slice(index, index + match.length)}</mark>
+      <mark className="match-highlight">{text.slice(index, index + match.length)}</mark>
       {text.slice(index + match.length)}
     </>
   );
 }
 
-function WorkRecord({ work, label }: { work: Work; label: string }) {
+function calculateCostDelta(primary: Work, comparison?: Work | null) {
+  if (!comparison || !primary.sanction_amount || !comparison.sanction_amount) return null;
+  const diff = primary.sanction_amount - comparison.sanction_amount;
+  const pct = Math.round((diff / comparison.sanction_amount) * 100);
+  return {
+    diff,
+    pct,
+    label: pct > 0 ? `+${pct}% vs comparison` : `${pct}% vs comparison`,
+  };
+}
+
+function WorkRecord({
+  work,
+  label,
+  badgeType = "primary",
+  isComparison = false,
+}: {
+  work: Work;
+  label: string;
+  badgeType?: "primary" | "comparison";
+  isComparison?: boolean;
+}) {
   return (
-    <article className="work-record">
+    <article className={`work-record ${isComparison ? "work-record--comparison" : "work-record--primary"}`}>
       <div className="work-record__topline">
-        <span>{label}</span>
-        <span className="provenance-badge">
-          <Database aria-hidden="true" size={13} strokeWidth={2} />
-          {provenanceLabels[work.source]}
-        </span>
+        <div className="work-record__tag-group">
+          <span className={`work-record__role-badge work-record__role-badge--${badgeType}`}>
+            {label}
+          </span>
+          <span className="work-record__source-badge" data-source={work.source}>
+            <Database aria-hidden="true" size={12} strokeWidth={2} />
+            {provenanceLabels[work.source]}
+          </span>
+        </div>
+        <code className="work-record__id">{work.id}</code>
       </div>
-      <p className="work-record__id">
-        <code>{work.id}</code>
-      </p>
-      <h3>{work.title}</h3>
-      <p className="work-record__description">{work.description}</p>
+
+      <div className="work-record__header">
+        <h4 className="work-record__title">{work.title}</h4>
+        <p className="work-record__description">{work.description}</p>
+      </div>
+
       <dl className="work-record__facts">
-        <div>
-          <dt>District</dt>
+        <div className="fact-item">
+          <dt>Location</dt>
           <dd>
-            <MapPin aria-hidden="true" size={14} strokeWidth={1.8} />
-            {work.district}, {work.state}
+            <MapPin aria-hidden="true" size={13} strokeWidth={2} />
+            <span>{work.district}, {work.state}</span>
           </dd>
         </div>
-        <div>
-          <dt>Sanction</dt>
-          <dd>{currencyFormatter.format(work.sanction_amount)}</dd>
+
+        <div className="fact-item">
+          <dt>Sanction Amount</dt>
+          <dd className="fact-item__amount" title={fullCurrencyFormatter.format(work.sanction_amount)}>
+            <strong>{currencyFormatter.format(work.sanction_amount)}</strong>
+          </dd>
         </div>
+
         {typeof work.quantity === "number" ? (
-          <div>
-            <dt>Quantity</dt>
+          <div className="fact-item">
+            <dt>Sanctioned Scope</dt>
             <dd>
               {quantityFormatter.format(work.quantity)}
-              {work.unit ? ` × ${work.unit}` : ""}
+              {work.unit ? ` ${work.unit}` : " units"}
             </dd>
           </div>
         ) : null}
+
         {typeof work.unit_cost === "number" ? (
-          <div>
-            <dt>Normalised unit cost</dt>
+          <div className="fact-item fact-item--highlight">
+            <dt>Normalized Unit Cost</dt>
             <dd>
-              {currencyFormatter.format(work.unit_cost)}
-              {work.unit ? ` per ${work.unit}` : " per unit"}
+              <strong>{currencyFormatter.format(work.unit_cost)}</strong>
+              <span>{work.unit ? ` / ${work.unit}` : " / unit"}</span>
             </dd>
           </div>
         ) : null}
-        <div>
-          <dt>Sanctioned</dt>
+
+        <div className="fact-item">
+          <dt>Sanction Date</dt>
           <dd>{formatDate(work.sanctioned_date)}</dd>
         </div>
-        <div>
-          <dt>Last progress</dt>
+
+        <div className="fact-item">
+          <dt>Last Recorded Progress</dt>
           <dd>{formatDate(work.last_progress_date)}</dd>
         </div>
       </dl>
+
       <div className="work-record__progress">
-        <div>
-          <span>Recorded progress</span>
+        <div className="work-record__progress-header">
+          <span>Physical Progress</span>
           <strong>{work.progress_percent}%</strong>
         </div>
-        <progress
-          max={100}
-          value={work.progress_percent}
-          aria-label={`${work.id} recorded progress ${work.progress_percent}%`}
-        />
+        <div className="progress-bar-track">
+          <div
+            className="progress-bar-fill"
+            style={{ width: `${Math.min(100, Math.max(0, work.progress_percent))}%` }}
+          />
+        </div>
       </div>
     </article>
   );
@@ -165,30 +216,52 @@ function WorkRecord({ work, label }: { work: Work; label: string }) {
 
 function TextMatchBlock({ match }: { match: TextMatch }) {
   return (
-    <article className="text-match">
-      <div className="text-match__header">
-        <span>
-          <Languages aria-hidden="true" size={16} strokeWidth={1.8} />
-          {match.language_pair}
-        </span>
-        <strong>
-          {match.score} / 100 · {match.score_label}
-        </strong>
+    <article className="text-match-card">
+      <div className="text-match-card__header">
+        <div className="text-match-card__lang">
+          <Languages aria-hidden="true" size={15} strokeWidth={2} />
+          <span>Cross-Lingual Match ({match.language_pair})</span>
+        </div>
+        <div className="text-match-card__score">
+          <Sparkles aria-hidden="true" size={13} strokeWidth={2} />
+          <strong>{match.score}/100 Match Confidence</strong>
+          <span>· {match.score_label}</span>
+        </div>
       </div>
-      <div className="text-match__pair">
-        <p lang="en">{highlightMatch(match.primary_text, match.primary_match)}</p>
-        <Link2 aria-hidden="true" size={17} strokeWidth={1.8} />
-        <p lang="hi">{highlightMatch(match.related_text, match.related_match)}</p>
+
+      <div className="text-match-card__comparison">
+        <div className="match-pane match-pane--en">
+          <span className="match-pane__lang-badge">EN (Primary)</span>
+          <p lang="en">{highlightMatch(match.primary_text, match.primary_match)}</p>
+        </div>
+        <div className="match-connector" aria-hidden="true">
+          <Link2 size={16} strokeWidth={2} />
+        </div>
+        <div className="match-pane match-pane--hi">
+          <span className="match-pane__lang-badge">HI (Comparison)</span>
+          <p lang="hi">{highlightMatch(match.related_text, match.related_match)}</p>
+        </div>
       </div>
-      {match.canonical_terms.length ? (
-        <p className="text-match__terms">
-          <strong>Canonical overlap</strong>
-          {match.canonical_terms.map((term) => (
-            <mark key={term}>{term}</mark>
-          ))}
-        </p>
+
+      {match.canonical_terms && match.canonical_terms.length > 0 ? (
+        <div className="text-match-card__canonical">
+          <span className="canonical-label">
+            <Layers aria-hidden="true" size={13} strokeWidth={2} />
+            Identified Semantic Concepts:
+          </span>
+          <div className="canonical-chips">
+            {match.canonical_terms.map((term) => (
+              <span key={term} className="canonical-chip">
+                {term}
+              </span>
+            ))}
+          </div>
+        </div>
       ) : null}
-      <p className="text-match__note">{match.method_note}</p>
+
+      <div className="text-match-card__footer">
+        <p>{match.method_note}</p>
+      </div>
     </article>
   );
 }
@@ -200,52 +273,43 @@ export function EvidencePanel({
   actionPending,
   statusMessage,
   onDecision,
+  onClose,
 }: EvidencePanelProps) {
   if (!evidence) {
     return (
       <div className="evidence-shell" aria-busy={isLoading}>
-        <header className="evidence-header evidence-header--unavailable">
-          <div className="evidence-header__copy">
-            <div className="evidence-header__meta">
-              <span>{selectedFlagId || "No flag selected"}</span>
-              {isLoading ? (
-                <span className="evidence-loading">
-                  <LoaderCircle aria-hidden="true" size={14} strokeWidth={1.8} />
-                  Loading exact evidence
-                </span>
-              ) : null}
+        {onClose ? (
+          <div className="evidence-modal-topbar">
+            <div className="evidence-modal-breadcrumb">
+              <FileText size={14} />
+              <span>Audit Queue</span>
+              <span>/</span>
+              <strong>Inspection Dossier</strong>
             </div>
-            <h2>
-              {isLoading
-                ? "Loading exact evidence"
-                : selectedFlagId
-                  ? "Exact evidence unavailable"
-                  : "No evidence selected"}
-            </h2>
-            <p>
-              {selectedFlagId
-                ? `No evidence payload for ${selectedFlagId} is available. No other flag has been substituted, so review actions are disabled.`
-                : "This scope has no flag selected. Review actions remain disabled until exact evidence is available."}
-            </p>
+            <button
+              className="evidence-modal-close-btn"
+              type="button"
+              aria-label="Close dossier (Esc)"
+              onClick={onClose}
+            >
+              <span>Return to Queue</span>
+              <kbd>Esc</kbd>
+              <X size={15} strokeWidth={2} />
+            </button>
           </div>
-        </header>
-        <div className="evidence-actions">
-          <button className="button button--light" type="button" disabled>
-            <CheckCircle2 aria-hidden="true" size={17} strokeWidth={1.9} />
-            Mark reviewed
-          </button>
-          <button className="button button--ghost-danger" type="button" disabled>
-            <MessageSquareWarning aria-hidden="true" size={17} strokeWidth={1.9} />
-            Dispute flag
-          </button>
-          <p className="evidence-actions__status" aria-live="polite">
-            {statusMessage}
+        ) : null}
+
+        <div className="evidence-empty-slate">
+          <FileText aria-hidden="true" size={32} strokeWidth={1.5} />
+          <h3>Select a flagged work to begin evidence inspection</h3>
+          <p>
+            Choose any record from the audit-priority queue above. The workbench will load the
+            record comparison, multi-factor risk decomposition, and cross-source evidence for human decision.
           </p>
-        </div>
-        <div className="evidence-unavailable">
-          <FileText aria-hidden="true" size={24} strokeWidth={1.6} />
-          <strong>Review requires an exact flag match</strong>
-          <p>Select another queue row or retry after the evidence service is available.</p>
+          <div className="evidence-empty-slate__notice">
+            <HelpCircle size={15} strokeWidth={2} />
+            <span>Review actions remain locked until an exact flag is selected.</span>
+          </div>
         </div>
       </div>
     );
@@ -257,295 +321,492 @@ export function EvidencePanel({
     0,
   );
   const comparedWork = evidence.related_work;
+  const costDelta = calculateCostDelta(evidence.primary_work, comparedWork);
   const hasPhotoAssets = Boolean(
     evidence.photo_evidence.primary_url || evidence.photo_evidence.related_url,
   );
+
   const photoStatusLabel =
     evidence.photo_evidence.status === "not_available"
-      ? "No photo evidence supplied"
+      ? "No photo assets supplied for this work"
       : evidence.photo_evidence.status === "not_flagged"
-        ? "No flagged photo-forensics signal"
+        ? "Photo forensics clean · no visual reuse signal detected"
         : evidence.flag.detector === "photo_quality"
-          ? "Photo quality signal needs review"
+          ? "Photo quality signal flagged for human review"
           : evidence.flag.detector === "photo_reuse"
-            ? "Photo reuse signal needs review"
-            : "Photo-forensics signal needs review";
+            ? "Photo reuse signal flagged for human review"
+            : "Photo forensics signal needs human inspection";
 
   return (
     <div className="evidence-shell" aria-busy={isLoading}>
-      <header className="evidence-header">
-        <div className="evidence-header__copy">
-          <div className="evidence-header__meta">
-            <span>{evidence.flag.id}</span>
-            <span className="review-status" data-status={reviewStatus}>
+      {/* Modal Sticky Top Navigation Bar */}
+      {onClose ? (
+        <div className="evidence-modal-topbar">
+          <div className="evidence-modal-breadcrumb">
+            <FileText size={14} />
+            <span>Audit-Priority Queue</span>
+            <span>/</span>
+            <strong>Record Dossier: {evidence.flag.id}</strong>
+            <span className="breadcrumb-work-id">· {evidence.primary_work.id}</span>
+          </div>
+          <button
+            className="evidence-modal-close-btn"
+            type="button"
+            aria-label="Close dossier and return to queue (Esc)"
+            onClick={onClose}
+          >
+            <span>Return to Queue</span>
+            <kbd>Esc</kbd>
+            <X size={15} strokeWidth={2} />
+          </button>
+        </div>
+      ) : null}
+
+      {/* Workbench Forensic Banner Header */}
+      <header className="evidence-hero">
+        <div className="evidence-hero__left">
+          <div className="evidence-hero__meta-strip">
+            <span className="flag-tag">FLAG {evidence.flag.id}</span>
+            <span className="flag-detector-tag">
+              {detectorLabel(evidence.flag.detector)}
+            </span>
+            <span className="review-status-pill" data-status={reviewStatus}>
               {reviewStatusLabels[reviewStatus]}
             </span>
             {isLoading ? (
-              <span className="evidence-loading">
-                <LoaderCircle aria-hidden="true" size={14} strokeWidth={1.8} />
-                Loading evidence
+              <span className="evidence-syncing">
+                <LoaderCircle className="spin" aria-hidden="true" size={13} strokeWidth={2} />
+                Syncing evidence
               </span>
             ) : null}
           </div>
-          <h2>Compare the records. Then decide.</h2>
-          <p>{evidence.flag.summary}</p>
+
+          <h2 className="evidence-hero__title">
+            Evidence Investigation & Forensic Dossier
+          </h2>
+          <p className="evidence-hero__summary">
+            {evidence.flag.summary}
+          </p>
         </div>
-        <div className="evidence-header__risk">
-          <span>Overall review priority</span>
-          <RiskBadge
-            tier={evidence.risk.tier}
-            score={evidence.risk.total_score}
-          />
+
+        <div className="evidence-hero__right">
+          <div className="priority-card">
+            <span className="priority-card__label">Audit Review Priority</span>
+            <RiskBadge
+              tier={evidence.risk.tier}
+              score={evidence.risk.total_score}
+            />
+            <span className="priority-card__hint">
+              Points prioritize review queue order
+            </span>
+          </div>
         </div>
       </header>
 
-      <div className="evidence-actions">
-        <button
-          className="button button--light"
-          type="button"
-          data-state={
-            actionPending ? "loading" : reviewStatus === "reviewed" ? "success" : undefined
-          }
-          aria-busy={actionPending}
-          disabled={actionPending || reviewStatus === "reviewed"}
-          onClick={() => onDecision("reviewed")}
-        >
-          <CheckCircle2 aria-hidden="true" size={17} strokeWidth={1.9} />
-          {actionPending
-            ? "Saving decision"
-            : reviewStatus === "reviewed"
-              ? "Reviewed"
-              : "Mark reviewed"}
-        </button>
-        <button
-          className="button button--ghost-danger"
-          type="button"
-          data-state={
-            actionPending ? "loading" : reviewStatus === "disputed" ? "error" : undefined
-          }
-          aria-busy={actionPending}
-          disabled={actionPending || reviewStatus === "disputed"}
-          onClick={() => onDecision("disputed")}
-        >
-          <MessageSquareWarning aria-hidden="true" size={17} strokeWidth={1.9} />
-          {actionPending
-            ? "Saving decision"
-            : reviewStatus === "disputed"
-              ? "Disputed"
-              : "Dispute flag"}
-        </button>
-        <p className="evidence-actions__status" aria-live="polite">
-          {statusMessage}
-        </p>
-      </div>
-
-      <div className="evidence-content" key={evidence.flag.id}>
-        <div className="comparison-heading">
-          <div>
-            <FileText aria-hidden="true" size={17} strokeWidth={1.8} />
-            <h3>Record comparison</h3>
-          </div>
-          <p>
-            Both records retain their source label. Similarity is a review signal, not a
-            decision.
+      {/* Decision Workflow Bar (Step 04 Quick Action Bar anchored at top of investigation) */}
+      <div className="decision-bar" role="region" aria-label="Reviewer decision toolbar">
+        <div className="decision-bar__info">
+          <span className="decision-bar__step-badge">STEP 04 · HUMAN DECISION</span>
+          <p className="decision-bar__prompt">
+            Inspect the evidence below, then record your official review determination:
           </p>
         </div>
-        <div className="work-comparison">
-          <WorkRecord work={evidence.primary_work} label="Primary work" />
-          {comparedWork ? (
-            <WorkRecord work={comparedWork} label="Comparison work" />
-          ) : (
-            <div className="comparison-empty">
-              <FileText aria-hidden="true" size={22} strokeWidth={1.6} />
-              <strong>No comparison work returned</strong>
-              <span>Review the detector signals and source record before deciding.</span>
-            </div>
-          )}
+
+        <div className="decision-bar__actions">
+          <button
+            className="button button--decision-clear"
+            type="button"
+            data-state={
+              actionPending ? "loading" : reviewStatus === "reviewed" ? "success" : undefined
+            }
+            aria-busy={actionPending}
+            disabled={actionPending || reviewStatus === "reviewed"}
+            onClick={() => onDecision("reviewed")}
+          >
+            <CheckCircle2 aria-hidden="true" size={16} strokeWidth={2} />
+            {actionPending
+              ? "Recording decision…"
+              : reviewStatus === "reviewed"
+                ? "Reviewed & Cleared"
+                : "Mark Reviewed & Cleared"}
+          </button>
+
+          <button
+            className="button button--decision-dispute"
+            type="button"
+            data-state={
+              actionPending ? "loading" : reviewStatus === "disputed" ? "error" : undefined
+            }
+            aria-busy={actionPending}
+            disabled={actionPending || reviewStatus === "disputed"}
+            onClick={() => onDecision("disputed")}
+          >
+            <MessageSquareWarning aria-hidden="true" size={16} strokeWidth={2} />
+            {actionPending
+              ? "Recording dispute…"
+              : reviewStatus === "disputed"
+                ? "Flag Disputed"
+                : "Dispute Flag / Request Field Audit"}
+          </button>
         </div>
 
-        <section className="risk-decomposition" aria-labelledby="risk-title">
-          <div className="analysis-heading">
-            <Scale aria-hidden="true" size={17} strokeWidth={1.8} />
+        <div className="decision-bar__status-line" aria-live="polite">
+          <span className="status-dot" data-status={reviewStatus} />
+          <span>{statusMessage}</span>
+        </div>
+      </div>
+
+      {/* Core Investigation Workspace Flow */}
+      <div className="evidence-sections">
+        {/* ============================================================
+            SECTION 01: RECORD COMPARISON
+           ============================================================ */}
+        <section className="evidence-section" aria-labelledby="section-01-heading">
+          <div className="evidence-section__header">
+            <div className="section-number">01</div>
             <div>
-              <h3 id="risk-title">Overall risk decomposition</h3>
+              <h3 id="section-01-heading">Record Comparison & Side-by-Side Verification</h3>
               <p>
-                {evidence.risk.components.length
-                  ? `${evidence.risk.components
-                      .map((component) => component.points)
-                      .join(" + ")} = ${componentPoints} component points${
-                      componentPoints === evidence.risk.total_score
-                        ? ", matching the overall score."
-                        : `; the backend overall score is ${evidence.risk.total_score}.`
-                    }`
-                  : `No scored components returned; overall score ${evidence.risk.total_score}.`}
+                Evaluate identical or overlapping parameters between the primary suspicious work
+                and historical/co-located records in the MPLADS registry.
               </p>
             </div>
+            {costDelta ? (
+              <div className="comparison-delta-badge" title={`Cost difference: ${currencyFormatter.format(costDelta.diff)}`}>
+                <TrendingUp size={14} strokeWidth={2} />
+                <span>Sanction Delta: {costDelta.label}</span>
+              </div>
+            ) : null}
           </div>
-          {evidence.risk.components.length ? (
-            <ol className="risk-component-list">
-              {evidence.risk.components.map((component, index) => (
-                <li key={`${component.detector}-${index}`}>
-                  <span className="risk-component-list__points">
-                    {component.points} / {component.maximum_points}
-                  </span>
-                  <div>
-                    <div className="signal-list__title">
+
+          <div className="comparison-grid">
+            <WorkRecord
+              work={evidence.primary_work}
+              label="Primary Scoped Record"
+              badgeType="primary"
+              isComparison={false}
+            />
+
+            {comparedWork ? (
+              <WorkRecord
+                work={comparedWork}
+                label="Comparison / Historical Record"
+                badgeType="comparison"
+                isComparison={true}
+              />
+            ) : (
+              <div className="comparison-unpaired">
+                <FileText aria-hidden="true" size={28} strokeWidth={1.6} />
+                <h4>No paired duplicate work record</h4>
+                <p>
+                  This flag was generated based on single-record parameter anomalies (e.g. stalled progress,
+                  unit cost variance against district baseline, or missing progress logs).
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ============================================================
+            SECTION 02: RISK DECOMPOSITION
+           ============================================================ */}
+        <section className="evidence-section" aria-labelledby="section-02-heading">
+          <div className="evidence-section__header">
+            <div className="section-number">02</div>
+            <div>
+              <h3 id="section-02-heading">Explainable Multi-Factor Risk Decomposition</h3>
+              <p>
+                Transparent attribution of risk points. The formula is additive and deterministic —
+                no black-box AI confidence models.
+              </p>
+            </div>
+            <div className="equation-badge">
+              <Scale size={14} strokeWidth={2} />
+              <span>{componentPoints} Total Score Points</span>
+            </div>
+          </div>
+
+          <div className="explainability-callout">
+            <HelpCircle size={15} strokeWidth={2} />
+            <span>
+              <strong>Guiding Rule:</strong> Risk scores prioritize review order in the national queue.
+              A high score does not accuse a work of irregularity; it directs human audit attention.
+            </span>
+          </div>
+
+          {evidence.risk.components && evidence.risk.components.length > 0 ? (
+            <div className="risk-components-table">
+              <div className="risk-table-header">
+                <span>Detector Component</span>
+                <span>Explanation & Rationale</span>
+                <span>Contributing Flags</span>
+                <span>Score Impact</span>
+              </div>
+
+              {evidence.risk.components.map((component, idx) => {
+                const pct = Math.round((component.points / component.maximum_points) * 100);
+                return (
+                  <div key={`${component.detector}-${idx}`} className="risk-table-row">
+                    <div className="risk-table-col risk-table-col--detector">
                       <strong>{detectorLabel(component.detector)}</strong>
-                      <span>
-                        {component.flag_ids.length
-                          ? `${component.flag_ids.length} contributing ${
-                              component.flag_ids.length === 1 ? "flag" : "flags"
-                            }`
-                          : "No contributing flag IDs"}
+                      <div className="mini-progress-track">
+                        <div className="mini-progress-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="risk-table-col risk-table-col--desc">
+                      <p>{component.explanation}</p>
+                    </div>
+
+                    <div className="risk-table-col risk-table-col--flags">
+                      {component.flag_ids.length > 0 ? (
+                        <div className="flag-chips">
+                          {component.flag_ids.map((fid) => (
+                            <code
+                              key={fid}
+                              className={`flag-chip ${fid === evidence.flag.id ? "flag-chip--active" : ""}`}
+                            >
+                              {fid} {fid === evidence.flag.id ? "· current" : ""}
+                            </code>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted">No flag ID</span>
+                      )}
+                    </div>
+
+                    <div className="risk-table-col risk-table-col--points">
+                      <span className="points-display">
+                        <strong>+{component.points}</strong>
+                        <span>/ {component.maximum_points}</span>
                       </span>
                     </div>
-                    <p>{component.explanation}</p>
-                    {component.flag_ids.length ? (
-                      <p className="risk-component-list__flags">
-                        {component.flag_ids.map((flagId) => (
-                          <code key={flagId}>
-                            {flagId}
-                            {flagId === evidence.flag.id ? " · selected" : ""}
-                          </code>
-                        ))}
-                      </p>
-                    ) : null}
                   </div>
-                </li>
-              ))}
-            </ol>
+                );
+              })}
+            </div>
           ) : (
-            <div className="analysis-empty">
-              <Scale aria-hidden="true" size={20} strokeWidth={1.6} />
-              <p>No risk components were returned for this work.</p>
+            <div className="section-empty-state">
+              <Scale size={20} strokeWidth={1.6} />
+              <p>No risk breakdown components returned for this work.</p>
             </div>
           )}
+
           {evidence.risk.explanation ? (
-            <p className="risk-decomposition__note">{evidence.risk.explanation}</p>
+            <div className="risk-summary-note">
+              <strong>Audit Synthesis:</strong> {evidence.risk.explanation}
+            </div>
           ) : null}
         </section>
 
-        <div className="evidence-analysis">
-          <section className="signal-section" aria-labelledby="signal-title">
-            <div className="analysis-heading">
-              <Scale aria-hidden="true" size={17} strokeWidth={1.8} />
-              <div>
-                <h3 id="signal-title">Selected flag supporting evidence</h3>
-                <p>
-                  {evidence.flag.id} contributes {evidence.flag.points} raw detector points.
-                  These signals explain that flag, not the work’s full risk equation.
-                </p>
-              </div>
-            </div>
-            {evidence.signals.length ? (
-              <ol className="signal-list">
-                {evidence.signals.map((signal) => (
-                  <li key={signal.label}>
-                    <span className="signal-list__points">{signal.points} pts</span>
-                    <div>
-                      <div className="signal-list__title">
-                        <strong>{signal.label}</strong>
-                        <span>{signal.value}</span>
-                      </div>
-                      <p>{signal.explanation}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <div className="analysis-empty">
-                <Scale aria-hidden="true" size={20} strokeWidth={1.6} />
-                <p>No supporting signal details were returned for this selected flag.</p>
-              </div>
-            )}
-          </section>
-
-          <section className="match-section" aria-labelledby="match-title">
-            <div className="analysis-heading">
-              <Languages aria-hidden="true" size={17} strokeWidth={1.8} />
-              <div>
-                <h3 id="match-title">Multilingual text evidence</h3>
-                <p>Matched phrases remain visible for direct reviewer inspection.</p>
-              </div>
-            </div>
-            {evidence.text_matches.length ? (
-              evidence.text_matches.map((match) => (
-                <TextMatchBlock key={`${match.language_pair}-${match.score}`} match={match} />
-              ))
-            ) : (
-              <div className="analysis-empty">
-                <Languages aria-hidden="true" size={20} strokeWidth={1.6} />
-                <p>No multilingual text signal contributes to this selected review.</p>
-              </div>
-            )}
-          </section>
-        </div>
-
-        <section className="photo-evidence" aria-labelledby="photo-title">
-          <div className="analysis-heading">
-            <Image aria-hidden="true" size={17} strokeWidth={1.8} />
+        {/* ============================================================
+            SECTION 03: SUPPORTING EVIDENCE
+           ============================================================ */}
+        <section className="evidence-section" aria-labelledby="section-03-heading">
+          <div className="evidence-section__header">
+            <div className="section-number">03</div>
             <div>
-              <h3 id="photo-title">Photo forensics</h3>
-              <p>{evidence.photo_evidence.summary}</p>
+              <h3 id="section-03-heading">Supporting Anomaly Signals & Forensic Assets</h3>
+              <p>
+                Specific detector evidence payloads including cross-lingual semantic matching,
+                unit-cost baseline comparisons, and photo metadata forensics.
+              </p>
             </div>
           </div>
-          <div>
-            <div className="photo-evidence__status">
-              {evidence.photo_evidence.status === "flagged" ? (
-                <MessageSquareWarning aria-hidden="true" size={17} strokeWidth={1.8} />
+
+          <div className="supporting-evidence-grid">
+            {/* Left: Signal Breakdown */}
+            <div className="evidence-subpanel">
+              <div className="subpanel-header">
+                <AlertOctagon size={16} strokeWidth={2} />
+                <h4>Triggered Signal Attributes</h4>
+              </div>
+
+              {evidence.signals && evidence.signals.length > 0 ? (
+                <div className="signal-cards-list">
+                  {evidence.signals.map((signal, sIdx) => (
+                    <div key={`${signal.label}-${sIdx}`} className="signal-card">
+                      <div className="signal-card__top">
+                        <span className="signal-card__label">{signal.label}</span>
+                        <span className="signal-card__badge">+{signal.points} pts</span>
+                      </div>
+                      <div className="signal-card__value">
+                        <code>{signal.value}</code>
+                      </div>
+                      <p className="signal-card__explanation">{signal.explanation}</p>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <Clock3 aria-hidden="true" size={17} strokeWidth={1.8} />
+                <div className="section-empty-state">
+                  <p>No specific signal attributes returned for this flag.</p>
+                </div>
               )}
-              <span>{photoStatusLabel}</span>
-              {evidence.photo_evidence.primary_reference ? (
-                <code>
-                  {evidence.photo_evidence.primary_reference} ↔{" "}
-                  {evidence.photo_evidence.related_reference ?? "No related reference"}
-                </code>
-              ) : null}
             </div>
+
+            {/* Right: Multilingual Matching */}
+            <div className="evidence-subpanel">
+              <div className="subpanel-header">
+                <Languages size={16} strokeWidth={2} />
+                <h4>Multilingual Semantic Text Analysis</h4>
+              </div>
+
+              {evidence.text_matches && evidence.text_matches.length > 0 ? (
+                <div className="text-matches-list">
+                  {evidence.text_matches.map((match, mIdx) => (
+                    <TextMatchBlock key={`${match.language_pair}-${mIdx}`} match={match} />
+                  ))}
+                </div>
+              ) : (
+                <div className="section-empty-state">
+                  <Languages size={22} strokeWidth={1.5} />
+                  <p>No cross-lingual text matching was triggered for this single-record anomaly.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Photo Forensics Block */}
+          <div className="photo-forensics-block">
+            <div className="photo-forensics-block__header">
+              <div className="photo-forensics-block__title">
+                <Image size={16} strokeWidth={2} />
+                <h4>Site Photo Forensics & Asset Verification</h4>
+              </div>
+              <div className="photo-forensics-block__status" data-status={evidence.photo_evidence.status}>
+                {evidence.photo_evidence.status === "flagged" ? (
+                  <MessageSquareWarning size={14} strokeWidth={2} />
+                ) : (
+                  <CheckCircle2 size={14} strokeWidth={2} />
+                )}
+                <span>{photoStatusLabel}</span>
+              </div>
+            </div>
+
+            <p className="photo-forensics-block__summary">
+              {evidence.photo_evidence.summary}
+            </p>
+
+            {evidence.photo_evidence.primary_reference ? (
+              <div className="photo-references-strip">
+                <span className="ref-label">Asset Hashes / Identifiers:</span>
+                <code>{evidence.photo_evidence.primary_reference}</code>
+                {evidence.photo_evidence.related_reference ? (
+                  <>
+                    <span className="ref-sep">↔</span>
+                    <code>{evidence.photo_evidence.related_reference}</code>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+
             {hasPhotoAssets ? (
-              <div className="photo-evidence__assets">
-                {evidence.photo_evidence.primary_url ? (
-                  <figure>
-                    <img
-                      src={evidence.photo_evidence.primary_url}
-                      alt={`Supplied evidence image for primary work ${evidence.primary_work.id}`}
-                      loading="lazy"
-                    />
-                    <figcaption>Primary work · supplied image</figcaption>
-                  </figure>
-                ) : (
-                  <div className="photo-evidence__missing">
-                    No primary image URL supplied
+              <div className="photo-comparison-grid">
+                <div className="photo-asset-card">
+                  <div className="photo-asset-card__label">
+                    <span>Primary Work Asset</span>
+                    <code className="photo-asset-card__work-id">{evidence.primary_work.id}</code>
                   </div>
-                )}
-                {evidence.photo_evidence.related_url ? (
-                  <figure>
-                    <img
-                      src={evidence.photo_evidence.related_url}
-                      alt={`Supplied evidence image for comparison work ${
-                        evidence.related_work?.id ?? "not identified"
-                      }`}
-                      loading="lazy"
-                    />
-                    <figcaption>Comparison work · supplied image</figcaption>
-                  </figure>
-                ) : (
-                  <div className="photo-evidence__missing">
-                    No related image URL supplied
+                  {evidence.photo_evidence.primary_url ? (
+                    <div className="photo-asset-card__img-wrap">
+                      <img
+                        src={evidence.photo_evidence.primary_url}
+                        alt={`Site verification asset for work ${evidence.primary_work.id}`}
+                        loading="lazy"
+                      />
+                      <div className="photo-watermark">
+                        <span>MPLADS AUDIT EVIDENCE</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="photo-missing-placeholder">No primary image file attached</div>
+                  )}
+                  <div className="photo-asset-card__caption">
+                    <span>Source: {provenanceLabels[evidence.primary_work.source]}</span>
                   </div>
-                )}
+                </div>
+
+                <div className="photo-asset-card">
+                  <div className="photo-asset-card__label">
+                    <span>Comparison Work Asset</span>
+                    <code className="photo-asset-card__work-id">
+                      {evidence.related_work?.id ?? "Historical match"}
+                    </code>
+                  </div>
+                  {evidence.photo_evidence.related_url ? (
+                    <div className="photo-asset-card__img-wrap">
+                      <img
+                        src={evidence.photo_evidence.related_url}
+                        alt={`Comparison site asset for work ${evidence.related_work?.id ?? "comparison"}`}
+                        loading="lazy"
+                      />
+                      <div className="photo-watermark">
+                        <span>MPLADS AUDIT EVIDENCE</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="photo-missing-placeholder">No comparison image file attached</div>
+                  )}
+                  <div className="photo-asset-card__caption">
+                    <span>
+                      Source: {evidence.related_work ? provenanceLabels[evidence.related_work.source] : "Registry database"}
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : (
-              <p className="photo-evidence__metadata-note">
-                <strong>Simulated photo metadata only.</strong> No image assets were supplied,
-                so this interface is not presenting a visual comparison.
-              </p>
+              <div className="photo-simulated-note">
+                <Clock3 size={15} strokeWidth={2} />
+                <span>
+                  <strong>Asset Status:</strong> Simulated image metadata inspected. No binary photographs were uploaded for this work.
+                </span>
+              </div>
             )}
           </div>
         </section>
       </div>
+
+      {/* Institutional Audit Flow Philosophy Footer & Bottom Return Action */}
+      <footer className="evidence-footer-philosophy">
+        <div className="philosophy-steps">
+          <div className="philosophy-step">
+            <span className="step-tag">01</span>
+            <strong>Automated Detection</strong>
+            <span>Explainable algorithms evaluate records</span>
+          </div>
+          <div className="philosophy-arrow">→</div>
+          <div className="philosophy-step">
+            <span className="step-tag">02</span>
+            <strong>Evidence Assembly</strong>
+            <span>Multi-factor signals compiled</span>
+          </div>
+          <div className="philosophy-arrow">→</div>
+          <div className="philosophy-step">
+            <span className="step-tag">03</span>
+            <strong>Explainable Scoring</strong>
+            <span>Prioritizes review workload</span>
+          </div>
+          <div className="philosophy-arrow">→</div>
+          <div className="philosophy-step philosophy-step--highlight">
+            <span className="step-tag">04</span>
+            <strong>Human Decision</strong>
+            <span>Competent authority determines action</span>
+          </div>
+        </div>
+
+        {onClose ? (
+          <div className="evidence-bottom-return">
+            <button
+              className="button button--return-queue"
+              type="button"
+              onClick={onClose}
+            >
+              <ArrowLeft size={15} strokeWidth={2} />
+              <span>Return to Audit-Priority Review Queue</span>
+            </button>
+          </div>
+        ) : null}
+      </footer>
     </div>
   );
 }

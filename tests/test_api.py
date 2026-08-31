@@ -34,9 +34,20 @@ def duplicate_flag_id(application) -> str:
     raise AssertionError("Injected duplicate pair did not produce an API flag")
 
 
+def auth_client(application) -> TestClient:
+    client = TestClient(application)
+    login_res = client.post(
+        "/auth/login",
+        json={"email": "reviewer@mplads.gov.in", "password": "Reviewer@1234"},
+    )
+    token = login_res.json()["access_token"]
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
+
+
 def test_health_and_role_dashboard_summary() -> None:
     application = create_app(works=DEMO_WORKS, as_of=DEMO_AS_OF_DATE)
-    client = TestClient(application)
+    client = auth_client(application)
 
     health = client.get("/health")
     assert health.status_code == 200
@@ -76,7 +87,8 @@ def test_health_and_role_dashboard_summary() -> None:
 
 def test_full_dashboard_queue_is_not_truncated() -> None:
     application = create_app(works=DEMO_WORKS, as_of=DEMO_AS_OF_DATE)
-    payload = TestClient(application).get("/api/dashboard-summary").json()
+    client = auth_client(application)
+    payload = client.get("/api/dashboard-summary").json()
 
     assert payload["totals"]["flags"] > 50
     assert len(payload["audit_queue"]) == payload["totals"]["flags"]
@@ -87,7 +99,7 @@ def test_full_dashboard_queue_is_not_truncated() -> None:
 
 def test_evidence_endpoint_returns_side_by_side_demo_payload() -> None:
     application = create_app(works=DEMO_WORKS, as_of=DEMO_AS_OF_DATE)
-    client = TestClient(application)
+    client = auth_client(application)
     flag_id = duplicate_flag_id(application)
 
     response = client.get(f"/api/flags/{flag_id}/evidence")
@@ -118,7 +130,7 @@ def test_evidence_endpoint_returns_side_by_side_demo_payload() -> None:
 
 def test_pair_flag_is_visible_and_scored_from_either_endpoint() -> None:
     application = create_app(works=DEMO_WORKS, as_of=DEMO_AS_OF_DATE)
-    client = TestClient(application)
+    client = auth_client(application)
     first = GROUND_TRUTH["duplicate_pairs"][0]["first"]
     second = GROUND_TRUTH["duplicate_pairs"][0]["second"]
     expected_flag_id = duplicate_flag_id(application)
@@ -175,7 +187,7 @@ def test_build_generates_computed_photo_assets_and_serves_them(
         works_path=works_path,
         as_of=DEMO_AS_OF_DATE,
     )
-    client = TestClient(application)
+    client = auth_client(application)
     first_id, second_id = ground_truth["photo_reuse_pairs"][0]
     photo_flag = next(
         flag
@@ -217,7 +229,7 @@ def test_review_workflow_persists_and_supports_frontend_patch(
         as_of=DEMO_AS_OF_DATE,
         review_repository=repository,
     )
-    client = TestClient(application)
+    client = auth_client(application)
     flag_id = duplicate_flag_id(application)
 
     response = client.post(
@@ -238,7 +250,7 @@ def test_review_workflow_persists_and_supports_frontend_patch(
         as_of=DEMO_AS_OF_DATE,
         review_repository=repository,
     )
-    reloaded_client = TestClient(reloaded_application)
+    reloaded_client = auth_client(reloaded_application)
     evidence = reloaded_client.get(f"/api/flags/{flag_id}/evidence").json()
     assert evidence["flag"]["review_status"] == "reviewed"
 

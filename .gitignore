@@ -26,10 +26,16 @@ ENV/
 coverage.xml
 htmlcov/
 
-# Local demo review state (generated at runtime)
+# Local demo review and auth state (generated at runtime)
 data/demo/reviews.json
 data/demo/.reviews.json.*.tmp
 data/demo/reviews.json.*.tmp
+data/demo/users.json
+data/demo/.users.json.*.tmp
+data/demo/users.json.*.tmp
+data/demo/auth_sessions.json
+data/demo/.auth_sessions.json.*.tmp
+data/demo/auth_sessions.json.*.tmp
 
 # Local databases
 *.db

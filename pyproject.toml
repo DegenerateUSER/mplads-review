@@ -10,6 +10,7 @@ requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",
   "pydantic>=2.9",
+  "pyjwt>=2.9",
   "rapidfuzz>=3.9",
   "Pillow>=10.4",
   "uvicorn>=0.30",

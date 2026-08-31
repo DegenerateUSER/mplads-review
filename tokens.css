@@ -1,113 +1,193 @@
-/* Hallmark · Cobalt tokens · Indic-capable system fallback · local-first safe */
+/* Institutional Government Audit Intelligence Design Tokens
+   Apple HIG interaction precision × Government audit calm × Evidence-first explainability */
 
 :root {
   color-scheme: light;
 
-  --color-paper: oklch(98.5% 0.004 250);
-  --color-paper-raised: oklch(99.4% 0.003 250);
-  --color-paper-soft: oklch(96% 0.008 250);
-  --color-paper-selected: oklch(94% 0.028 256);
-  --color-ink: oklch(21% 0.018 258);
-  --color-ink-soft: oklch(33% 0.018 257);
-  --color-muted: oklch(44% 0.016 256);
-  --color-rule: oklch(87% 0.012 252);
-  --color-rule-strong: oklch(65% 0.018 254);
-  --color-accent: oklch(54% 0.21 256);
-  --color-accent-hover: oklch(47% 0.2 256);
-  --color-accent-soft: oklch(91% 0.055 256);
-  --color-accent-on-dark: oklch(76% 0.14 256);
+  /* Surfaces & Canvas (Light mode - National Monitoring & Scoped Review) */
+  --color-paper: oklch(98.8% 0.003 240);
+  --color-paper-raised: oklch(100% 0 0);
+  --color-paper-soft: oklch(96.8% 0.006 245);
+  --color-paper-hover: oklch(95.2% 0.01 245);
+  --color-paper-selected: oklch(93.8% 0.024 250);
+  --color-paper-active: oklch(92% 0.03 250);
+
+  /* Typography & Ink */
+  --color-ink: oklch(18% 0.02 260);
+  --color-ink-secondary: oklch(28% 0.02 258);
+  --color-ink-soft: oklch(36% 0.018 257);
+  --color-muted: oklch(50% 0.016 256);
+  --color-subtle: oklch(66% 0.014 254);
+
+  /* Borders & Dividers */
+  --color-rule: oklch(89% 0.008 250);
+  --color-rule-subtle: oklch(92.5% 0.006 250);
+  --color-rule-strong: oklch(74% 0.015 254);
+  --color-rule-hover: oklch(58% 0.02 256);
+
+  /* Institutional Cobalt Brand / Primary Interaction Accent */
+  --color-accent: oklch(52% 0.2 256);
+  --color-accent-hover: oklch(45% 0.21 256);
+  --color-accent-soft: oklch(93.5% 0.045 256);
+  --color-accent-subtle: oklch(96.5% 0.02 256);
   --color-accent-ink: oklch(99% 0.003 250);
-  --color-focus: oklch(18% 0.025 258);
-  --color-graphite: oklch(20% 0.016 260);
-  --color-graphite-raised: oklch(24% 0.018 260);
-  --color-graphite-ink: oklch(95% 0.008 250);
-  --color-graphite-muted: oklch(76% 0.012 252);
-  --color-graphite-rule: oklch(50% 0.018 258);
-  --color-graphite-selected: oklch(29% 0.045 257);
-  --color-danger: oklch(45% 0.18 27);
-  --color-danger-soft: oklch(94% 0.035 27);
-  --color-danger-ink: oklch(31% 0.12 27);
-  --color-danger-on-dark: oklch(78% 0.11 27);
-  --color-warning: oklch(46% 0.12 72);
-  --color-warning-soft: oklch(95% 0.045 82);
-  --color-warning-ink: oklch(32% 0.075 68);
-  --color-success: oklch(40% 0.12 151);
-  --color-success-soft: oklch(94% 0.04 151);
-  --color-success-ink: oklch(29% 0.08 151);
-  --color-success-on-dark: oklch(78% 0.1 151);
-  --color-backdrop: oklch(17% 0.018 258 / 0.58);
-  --color-shadow: oklch(20% 0.016 260 / 0.12);
+  --color-accent-border: oklch(78% 0.1 256);
+  --color-focus: oklch(52% 0.2 256);
+
+  /* Forensic Dark Canvas (Graphite Mode - Deep Evidence Inspection Workspace) */
+  --color-graphite-bg: oklch(14% 0.016 260);
+  --color-graphite: oklch(17.5% 0.018 260);
+  --color-graphite-raised: oklch(21.5% 0.02 260);
+  --color-graphite-surface: oklch(25% 0.022 260);
+  --color-graphite-hover: oklch(28% 0.025 260);
+  --color-graphite-selected: oklch(30% 0.04 256);
+  --color-graphite-ink: oklch(96% 0.006 250);
+  --color-graphite-secondary: oklch(86% 0.01 252);
+  --color-graphite-muted: oklch(70% 0.014 254);
+  --color-graphite-subtle: oklch(55% 0.016 256);
+  --color-graphite-rule: oklch(32% 0.02 260);
+  --color-graphite-rule-subtle: oklch(26% 0.018 260);
+  --color-graphite-rule-strong: oklch(44% 0.022 260);
+  --color-accent-on-dark: oklch(74% 0.16 256);
+  --color-accent-dark-soft: oklch(28% 0.07 256);
+
+  /* Semantic Risk / Priority Semantics (Triple-tier) */
+  /* Red Tier · High Priority (70+ score) */
+  --color-danger: oklch(50% 0.2 28);
+  --color-danger-hover: oklch(44% 0.21 28);
+  --color-danger-soft: oklch(95% 0.035 28);
+  --color-danger-ink: oklch(32% 0.14 28);
+  --color-danger-border: oklch(82% 0.09 28);
+  --color-danger-on-dark: oklch(76% 0.14 28);
+  --color-danger-dark-soft: oklch(26% 0.08 28);
+
+  /* Amber Tier · Attention Required (40-69 score) */
+  --color-warning: oklch(55% 0.14 75);
+  --color-warning-hover: oklch(48% 0.15 75);
+  --color-warning-soft: oklch(95.5% 0.04 80);
+  --color-warning-ink: oklch(34% 0.09 72);
+  --color-warning-border: oklch(84% 0.08 75);
+  --color-warning-on-dark: oklch(78% 0.12 75);
+  --color-warning-dark-soft: oklch(26% 0.06 75);
+
+  /* Green Tier · Lower Risk / Reviewed (0-39 score) */
+  --color-success: oklch(48% 0.13 150);
+  --color-success-hover: oklch(42% 0.14 150);
+  --color-success-soft: oklch(94.5% 0.035 150);
+  --color-success-ink: oklch(28% 0.09 150);
+  --color-success-border: oklch(80% 0.08 150);
+  --color-success-on-dark: oklch(76% 0.11 150);
+  --color-success-dark-soft: oklch(25% 0.06 150);
+
+  /* Overlay & Shadows */
+  --color-backdrop: oklch(14% 0.016 260 / 0.65);
+  --color-shadow: oklch(18% 0.02 260 / 0.08);
+  --color-shadow-strong: oklch(18% 0.02 260 / 0.18);
   --color-transparent: transparent;
 
-  --font-display: "Space Grotesk", "Avenir Next", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Inter", "Avenir Next", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+  /* Typography Stack */
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
 
+  /* Spacing Scale (8pt grid system with 4pt half-steps) */
   --space-0: 0;
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2.5rem;
-  --space-2xl: 4rem;
-  --space-3xl: 6rem;
-  --space-page: clamp(1rem, 3vw, 3rem);
-  --space-section: clamp(2.5rem, 5vw, 5rem);
+  --space-3xs: 0.125rem; /* 2px */
+  --space-2xs: 0.25rem;  /* 4px */
+  --space-xs: 0.5rem;    /* 8px */
+  --space-sm: 0.75rem;   /* 12px */
+  --space-md: 1rem;      /* 16px */
+  --space-lg: 1.5rem;    /* 24px */
+  --space-xl: 2rem;      /* 32px */
+  --space-2xl: 3rem;     /* 48px */
+  --space-3xl: 4.5rem;   /* 72px */
+  --space-page: clamp(1rem, 2.5vw, 2.5rem);
+  --space-section: clamp(2rem, 4vw, 4rem);
 
-  --text-2xs: 0.6875rem;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-md: 1.125rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: clamp(1.75rem, 3vw, 2.5rem);
-  --text-display: clamp(2rem, 4vw, 3.25rem);
+  /* Font Sizes */
+  --text-3xs: 0.625rem;  /* 10px */
+  --text-2xs: 0.6875rem; /* 11px */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.84375rem; /* 13.5px */
+  --text-base: 0.9375rem;/* 15px */
+  --text-md: 1.0625rem;  /* 17px */
+  --text-lg: 1.25rem;    /* 20px */
+  --text-xl: 1.5rem;     /* 24px */
+  --text-2xl: clamp(1.65rem, 2.5vw, 2.15rem);
+  --text-display: clamp(1.85rem, 3.2vw, 2.75rem);
 
-  --leading-tight: 1.12;
-  --leading-heading: 1.2;
-  --leading-body: 1.58;
-  --leading-ui: 1.35;
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.15;
+  --leading-heading: 1.24;
+  --leading-ui: 1.38;
+  --leading-body: 1.54;
 
+  /* Font Weights */
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
 
+  /* Letter Spacing */
   --tracking-tight: -0.025em;
-  --tracking-label: 0.06em;
+  --tracking-normal: -0.005em;
+  --tracking-label: 0.05em;
+  --tracking-wide: 0.08em;
 
+  /* Motion Curves (Apple-standard cubic-bezier) */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Durations */
   --dur-instant: 100ms;
-  --dur-micro: 120ms;
-  --dur-panel: 300ms;
+  --dur-fast: 150ms;
+  --dur-normal: 220ms;
+  --dur-panel: 280ms;
 
+  /* Radii */
   --radius-none: 0;
-  --radius-control: 0.375rem;
-  --radius-panel: 0.625rem;
-  --radius-status: 999rem;
+  --radius-xs: 0.25rem;   /* 4px */
+  --radius-control: 0.375rem; /* 6px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-panel: 0.625rem; /* 10px */
+  --radius-card: 0.75rem; /* 12px */
+  --radius-status: 9999px;
 
+  /* Rules & Borders */
   --rule-none: 0;
   --rule-thin: 1px;
+  --rule-medium: 1.5px;
   --rule-focus: 2px;
+  --rule-accent: 3px;
 
-  --control-height: 2.75rem;
+  /* Control Heights & Hit Targets */
+  --control-height-sm: 2.125rem;
+  --control-height: 2.5rem;
+  --control-height-lg: 2.875rem;
   --touch-target: 2.75rem;
-  --layout-max: 94rem;
-  --layout-dialog: 42rem;
-  --layout-reading: 66ch;
-  --layout-label: 12rem;
-  --layout-queue-title: 17rem;
 
+  /* Layout Max Widths */
+  --layout-max: 92rem;
+  --layout-dialog: 40rem;
+  --layout-reading: 68ch;
+  --layout-label: 11rem;
+  --layout-queue-title: 18rem;
+
+  /* Layers */
   --z-sticky: 200;
+  --z-popover: 300;
   --z-modal: 400;
 
+  /* Opacities */
   --opacity-hidden: 0;
-  --opacity-disabled: 0.52;
-  --opacity-pressed: 0.82;
+  --opacity-disabled: 0.45;
+  --opacity-pressed: 0.78;
 
-  --shadow-panel: 0 1rem 3rem var(--color-shadow);
+  /* Restrained Shadows */
+  --shadow-xs: 0 1px 2px var(--color-shadow);
+  --shadow-sm: 0 1px 3px var(--color-shadow), 0 1px 2px -1px var(--color-shadow);
+  --shadow-md: 0 4px 12px var(--color-shadow), 0 1px 3px var(--color-shadow);
+  --shadow-panel: 0 12px 32px oklch(14% 0.016 260 / 0.14), 0 2px 6px oklch(14% 0.016 260 / 0.08);
 }
