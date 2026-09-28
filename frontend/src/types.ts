@@ -8,6 +8,20 @@ export type ReviewStatus =
   | "needs_follow_up";
 export type DataSource = "real_scraped" | "manually_compiled" | "synthetic";
 
+export interface User {
+  id: string;
+  email: string;
+  role: RoleMode;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user?: User;
+}
+
 export interface Work {
   id: string;
   title: string;

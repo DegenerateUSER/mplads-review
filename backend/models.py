@@ -206,3 +206,52 @@ class ReviewRecord(StrictModel):
     reviewer: str
     notes: str
     reviewed_at: datetime
+
+
+class User(StrictModel):
+    id: str
+    email: str
+    password_hash: str
+    role: Role = Role.MINISTRY
+    is_active: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+
+class SafeUser(StrictModel):
+    id: str
+    email: str
+    role: Role = Role.MINISTRY
+    is_active: bool = True
+    created_at: datetime
+
+
+class AuthSession(StrictModel):
+    id: str
+    user_id: str
+    jti: str
+    token_hash: str
+    created_at: datetime
+    expires_at: datetime
+    revoked_at: datetime | None = None
+    replaced_by: str | None = None
+    user_agent: str | None = None
+    ip_address: str | None = None
+
+
+class SignupRequest(StrictModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=8, max_length=128)
+    role: Role | None = None
+
+
+class LoginRequest(StrictModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class TokenResponse(StrictModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: SafeUser | None = None
+
