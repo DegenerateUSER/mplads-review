@@ -79,23 +79,25 @@ function normaliseReviewStatus(value: unknown): ReviewStatus {
 }
 
 function normaliseDetector(value: unknown, evidence?: Record<string, unknown>) {
-  const detector = asString(value, "unclassified").toLowerCase();
+  const rawDetector = asString(value, "unclassified").toLowerCase();
   const aliases: Record<string, string> = {
     duplicate: "duplicate_work",
     cost_outlier: "unit_cost_outlier",
     stall: "stalled_work",
   };
-  if (detector === "photo") {
+  if (rawDetector === "photo") {
     const subtype = asString(evidence?.signal_type).toLowerCase();
     if (subtype === "photo_reuse" || subtype === "photo_quality") return subtype;
     return "photo";
   }
-  return aliases[detector] ?? detector;
+  return aliases[rawDetector] ?? rawDetector;
 }
 
 function aggregateDetector(value: unknown) {
-  const detector = normaliseDetector(value);
-  return detector === "photo_reuse" || detector === "photo_quality" ? "photo" : detector;
+  const normalisedDetector = normaliseDetector(value);
+  return normalisedDetector === "photo_reuse" || normalisedDetector === "photo_quality"
+    ? "photo"
+    : normalisedDetector;
 }
 
 function resolveAssetUrl(value: unknown) {
@@ -112,8 +114,8 @@ function resolveAssetUrl(value: unknown) {
 
 function normaliseWork(value: unknown): Work | null {
   if (!isRecord(value)) return null;
-  const id = asString(value.id);
-  if (!id) return null;
+  const recordId = asString(value.id);
+  if (!recordId) return null;
   const riskScore = asNumber(value.risk_score);
   const quantity = asOptionalNumber(value.quantity);
   const unit = asString(value.unit).trim() || undefined;
@@ -125,7 +127,7 @@ function normaliseWork(value: unknown): Work | null {
       : "synthetic";
 
   return {
-    id,
+    id: recordId,
     title: asString(value.title, "Untitled work"),
     description: asString(value.description),
     state: asString(value.state, "Unknown state"),
@@ -152,15 +154,15 @@ function normaliseWork(value: unknown): Work | null {
 
 function normaliseFlag(value: unknown): Flag | null {
   if (!isRecord(value)) return null;
-  const id = asString(value.id);
-  const workId = asString(value.work_id);
-  if (!id || !workId) return null;
+  const flagId = asString(value.id);
+  const flagWorkId = asString(value.work_id);
+  if (!flagId || !flagWorkId) return null;
   const points = asNumber(value.points);
   const evidence = isRecord(value.evidence) ? value.evidence : {};
 
   return {
-    id,
-    work_id: workId,
+    id: flagId,
+    work_id: flagWorkId,
     detector: normaliseDetector(value.detector, evidence),
     severity: normaliseSeverity(value.severity, points),
     points,
@@ -174,9 +176,9 @@ function normaliseFlag(value: unknown): Flag | null {
 
 function normaliseQueueItem(value: unknown): AuditQueueItem | null {
   if (!isRecord(value)) return null;
-  const flag = normaliseFlag(value.flag);
+  const queueFlag = normaliseFlag(value.flag);
   const work = normaliseWork(value.work ?? value.primary_work);
-  return flag && work ? { flag, work } : null;
+  return queueFlag && work ? { flag: queueFlag, work } : null;
 }
 
 function normaliseDistrict(value: unknown): DistrictSummary | null {
@@ -331,12 +333,12 @@ function normalisePhotoEvidence(value: unknown): PhotoEvidence {
 
 function normaliseRiskComponent(value: unknown): RiskComponent | null {
   if (!isRecord(value)) return null;
-  const detector = normaliseDetector(value.detector);
+  const componentDetector = normaliseDetector(value.detector);
   const flagIds = Array.isArray(value.flag_ids)
     ? value.flag_ids.filter((flagId): flagId is string => typeof flagId === "string")
     : [];
   return {
-    detector,
+    detector: componentDetector,
     points: asNumber(value.points),
     maximum_points: asNumber(value.maximum_points),
     flag_ids: flagIds,
@@ -346,8 +348,8 @@ function normaliseRiskComponent(value: unknown): RiskComponent | null {
 
 function normaliseRisk(value: unknown): RiskScore | null {
   if (!isRecord(value)) return null;
-  const workId = asString(value.work_id);
-  if (!workId) return null;
+  const riskWorkId = asString(value.work_id);
+  if (!riskWorkId) return null;
   const totalScore = asNumber(value.total_score);
   const components = Array.isArray(value.components)
     ? value.components
@@ -355,7 +357,7 @@ function normaliseRisk(value: unknown): RiskScore | null {
         .filter((component): component is RiskComponent => Boolean(component))
     : [];
   return {
-    work_id: workId,
+    work_id: riskWorkId,
     total_score: totalScore,
     tier: normaliseRiskTier(value.tier, totalScore),
     components,
@@ -365,15 +367,15 @@ function normaliseRisk(value: unknown): RiskScore | null {
 
 function normaliseEvidence(value: unknown): EvidenceResponse | null {
   if (!isRecord(value)) return null;
-  const flag = normaliseFlag(value.flag);
+  const evidenceFlag = normaliseFlag(value.flag);
   const primaryWork = normaliseWork(value.primary_work);
   const relatedWork = normaliseWork(value.related_work);
   const risk = normaliseRisk(value.risk);
   if (
-    !flag ||
+    !evidenceFlag ||
     !primaryWork ||
     !risk ||
-    flag.work_id !== primaryWork.id ||
+    evidenceFlag.work_id !== primaryWork.id ||
     risk.work_id !== primaryWork.id
   ) {
     return null;
@@ -388,7 +390,7 @@ function normaliseEvidence(value: unknown): EvidenceResponse | null {
     : [];
 
   return {
-    flag,
+    flag: evidenceFlag,
     primary_work: primaryWork,
     related_work: relatedWork,
     risk,
@@ -430,11 +432,11 @@ export async function loadDashboard(role: RoleMode): Promise<ApiResult<Dashboard
     if (role === "mp") {
       params.set("mp", "Demo MP Kavita Mishra");
     }
-    const raw = await fetchJson(`/dashboard-summary?${params.toString()}`);
-    const data = normaliseSummary(raw);
-    if (!data) throw new Error("Dashboard response did not match the expected schema");
+    const dashboardPayload = await fetchJson(`/dashboard-summary?${params.toString()}`);
+    const dashboardData = normaliseSummary(dashboardPayload);
+    if (!dashboardData) throw new Error("Dashboard response did not match the expected schema");
     return {
-      data,
+      data: dashboardData,
       mode: "api",
       message: "FastAPI connected. Provenance labels come from the returned records.",
     };
@@ -452,22 +454,22 @@ export async function loadEvidence(
   flagId: string,
 ): Promise<ApiResult<EvidenceResponse | null>> {
   try {
-    const raw = await fetchJson(`/flags/${encodeURIComponent(flagId)}/evidence`);
-    const data = normaliseEvidence(raw);
-    if (!data || data.flag.id !== flagId) {
+    const evidencePayload = await fetchJson(`/flags/${encodeURIComponent(flagId)}/evidence`);
+    const evidenceData = normaliseEvidence(evidencePayload);
+    if (!evidenceData || evidenceData.flag.id !== flagId) {
       throw new Error("Evidence response did not match the requested flag");
     }
     return {
-      data,
+      data: evidenceData,
       mode: "api",
       message: "Evidence loaded from FastAPI.",
     };
   } catch {
-    const data = getDemoEvidence(flagId);
+    const fallbackEvidence = getDemoEvidence(flagId);
     return {
-      data,
+      data: fallbackEvidence,
       mode: "demo",
-      message: data
+      message: fallbackEvidence
         ? "Showing exact synthetic evidence from the static fallback."
         : `Evidence for ${flagId} is unavailable; no other flag was substituted.`,
     };
@@ -479,12 +481,12 @@ export async function saveReviewStatus(
   status: ReviewStatus,
 ): Promise<Flag | null> {
   try {
-    const raw = await fetchJson(`/flags/${encodeURIComponent(flagId)}/review`, {
+    const reviewPayload = await fetchJson(`/flags/${encodeURIComponent(flagId)}/review`, {
       method: "PATCH",
       body: JSON.stringify({ review_status: status }),
     });
-    const flag = normaliseFlag(raw);
-    return flag?.id === flagId ? flag : null;
+    const updatedFlag = normaliseFlag(reviewPayload);
+    return updatedFlag?.id === flagId ? updatedFlag : null;
   } catch {
     return null;
   }
