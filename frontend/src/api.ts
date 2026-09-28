@@ -19,10 +19,12 @@ import type {
   Work,
 } from "./types";
 
-const API_URL = import.meta.env.NEXT_BACKEND_URL.replace(/\/+$/, "");
-const REQUEST_TIMEOUT_MS = 1_800;
 const DEFAULT_API_URL = "http://localhost:8000/api";
-const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/+$/, "");
+const RAW_API_URL =
+  (typeof import.meta.env.VITE_API_URL === "string" && import.meta.env.VITE_API_URL) ||
+  (typeof import.meta.env.NEXT_BACKEND_URL === "string" && import.meta.env.NEXT_BACKEND_URL) ||
+  DEFAULT_API_URL;
+const API_URL = RAW_API_URL.replace(/\/+$/, "");
 const API_BASE_URL = API_URL.endsWith("/api") ? API_URL.slice(0, -4) : API_URL;
 const REQUEST_TIMEOUT_MS = 3_000;
 const API_ORIGIN = (() => {
@@ -161,7 +163,7 @@ function normaliseWork(value: unknown): Work | null {
       : "synthetic";
 
   return {
-    id,
+    id: recordId,
     title: asString(value.title, "Untitled Work"),
     description: asString(value.description),
     state: asString(value.state, "Unknown State"),
@@ -194,8 +196,8 @@ function normaliseFlag(value: unknown): Flag | null {
   const points = asNumber(value.points);
   const evidence = isRecord(value.evidence) ? value.evidence : {};
   return {
-    id,
-    work_id: workId,
+    id: flagId,
+    work_id: flagWorkId,
     detector: aggregateDetector(value.detector),
     severity: normaliseSeverity(value.severity, points),
     points,
