@@ -17,8 +17,7 @@ import type {
   Work,
 } from "./types";
 
-const DEFAULT_API_URL = "http://localhost:8000/api";
-const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/+$/, "");
+const API_URL = import.meta.env.NEXT_BACKEND_URL.replace(/\/+$/, "");
 const REQUEST_TIMEOUT_MS = 1_800;
 const API_ORIGIN = (() => {
   try {
