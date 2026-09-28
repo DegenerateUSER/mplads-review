@@ -13,6 +13,7 @@ dependencies = [
   "pyjwt>=2.9",
   "rapidfuzz>=3.9",
   "Pillow>=10.4",
+  "python-dotenv>=1.0",
   "uvicorn>=0.30",
 ]
 

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import os
+from datetime import date
 from datetime import date, datetime, timezone
 from pathlib import Path
 import secrets
 from typing import Iterable
 
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Query
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -54,6 +58,8 @@ from data.generator import DEMO_AS_OF_DATE, generate_demo_dataset
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
 DEFAULT_WORKS_PATH = PROJECT_ROOT / "data" / "demo" / "works.json"
 DEFAULT_PHOTOS_PATH = PROJECT_ROOT / "data" / "demo" / "photos"
 
@@ -152,8 +158,7 @@ def create_app(
         )
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=[],
-        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+        allow_origins=[os.environ["FRONTEND_URL"].rstrip("/")],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
